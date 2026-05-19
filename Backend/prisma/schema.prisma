@@ -1,5 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// The Prisma database schema
+// Configured for a Multi-Vendor E-Commerce Platform
 
 generator client {
   provider = "prisma-client-js"
@@ -18,9 +18,14 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  orders    Order[]
+  // RELATIONAL UPDATE: Disambiguating buyer vs. seller orders.
+  // A user can place orders (buyer) and fulfill orders (seller).
+  purchasedOrders Order[] @relation("BuyerOrders")
+  soldOrders      Order[] @relation("SellerOrders")
+  
   reviews   Review[]
   cartItems CartItem[]
+  products  Product[]
 
   @@map("users")
 }
@@ -50,6 +55,9 @@ model Product {
   categoryId String   @map("category_id")
   category   Category @relation(fields: [categoryId], references: [id])
 
+  sellerId String @map("seller_id")
+  seller   User   @relation(fields: [sellerId], references: [id])
+
   orderItems OrderItem[]
   reviews    Review[]
   cartItems  CartItem[]
@@ -64,8 +72,13 @@ model Order {
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
+  // The buyer who placed the order
   userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation("BuyerOrders", fields: [userId], references: [id])
+
+  // The specific seller responsible for fulfilling this split segment of the cart
+  sellerId String @map("seller_id")
+  seller   User   @relation("SellerOrders", fields: [sellerId], references: [id])
 
   items OrderItem[]
 
@@ -79,6 +92,7 @@ model OrderItem {
 
   orderId   String @map("order_id")
   order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
   productId String @map("product_id")
   product   Product @relation(fields: [productId], references: [id])
 
@@ -94,6 +108,7 @@ model Review {
 
   userId    String @map("user_id")
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   productId String @map("product_id")
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -106,6 +121,7 @@ model CartItem {
 
   userId    String @map("user_id")
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   productId String @map("product_id")
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -113,8 +129,23 @@ model CartItem {
   @@map("cart_items")
 }
 
+// NEW MODEL: Dynamic Admin Configuration
+// This enables the admin dashboard to control frontend content without code deployments.
+model StorefrontConfig {
+  id          String   @id @default(uuid())
+  key         String   @unique // Example: 'HERO_BANNER_URL', 'FEATURED_PRODUCT_IDS'
+  value       Json     // Allows storage of arrays, objects, or strings natively
+  description String?  // Admin-facing note explaining what this config does
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("storefront_configs")
+}
+
 enum Role {
   CUSTOMER
+  SELLER
   ADMIN
 }
 

@@ -11,7 +11,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "node prisma/seed.js"
+    "db:seed": "node prisma/seed.js",
+    "test": "node --test src/**/*.test.js",
+    "test:stress": "node tests/stress.js"
   },
   "keywords": [],
   "author": "",
@@ -19,12 +21,16 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "autocannon": "^8.0.0",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.6",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.15.6"
+    "pg": "^8.15.6",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.0",
