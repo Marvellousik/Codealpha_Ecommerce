@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import prisma from "../src/config/db.js";
 
 async function main() {
-  console.log("🌱 Seeding AppleVault database...");
+  console.log(" Seeding AppleVault database...");
 
   // --- Categories ---
   const categories = await Promise.all([

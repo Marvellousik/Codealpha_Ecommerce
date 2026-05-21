@@ -5,7 +5,7 @@ export function validate(schema) {
       return res.status(400).json({
         success: false,
         error: "Validation failed",
-        details: result.error.errors,
+        details: result.error.issues,
       });
     }
     req.validatedBody = result.data;

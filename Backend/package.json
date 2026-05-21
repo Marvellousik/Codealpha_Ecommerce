@@ -12,7 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "node prisma/seed.js",
-    "test": "node --test src/**/*.test.js",
+    "test": "node --test --test-concurrency=1 src/controllers/auth.controller.test.js src/controllers/product.controller.test.js src/controllers/cart.controller.test.js src/controllers/order.controller.test.js src/controllers/storefront.controller.test.js",
     "test:stress": "node tests/stress.js"
   },
   "keywords": [],

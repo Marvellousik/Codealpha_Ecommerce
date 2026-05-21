@@ -17,7 +17,7 @@ export async function getCart(req, res) {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { id: "desc" },
     });
 
     const total = items.reduce((sum, item) => sum + item.quantity * Number(item.product.price), 0);

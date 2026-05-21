@@ -1,10 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useProductStore } from '../store/products'
 import { getIcon } from '../data/products'
 
 const router = useRouter()
+const route = useRoute()
 const store = useProductStore()
 const searchQuery = ref('')
 const selectedCategory = ref('ALL')
@@ -12,6 +13,14 @@ const selectedCategory = ref('ALL')
 const categories = ['ALL', 'IPHONES', 'IPADS', 'AIRPODS', 'ACCESSORIES']
 
 onMounted(() => {
+  // Handle query params from navbar
+  const catParam = route.query.category
+  if (catParam && typeof catParam === 'string') {
+    const normalized = catParam.toUpperCase()
+    if (categories.includes(normalized)) {
+      selectedCategory.value = normalized
+    }
+  }
   store.fetchProducts()
 })
 
@@ -19,8 +28,6 @@ onMounted(() => {
 watch([searchQuery, selectedCategory], () => {
   const params = {}
   if (searchQuery.value.trim()) params.search = searchQuery.value.trim()
-  // Note: backend category filter uses categoryId, not name. 
-  // We'll do client-side filtering for categories since API uses IDs.
   store.fetchProducts(params)
 })
 

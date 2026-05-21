@@ -5,16 +5,15 @@ import http from "http";
 import app from "../app.js";
 
 export async function clearDatabase() {
-  await prisma.$transaction([
-    prisma.orderItem.deleteMany(),
-    prisma.order.deleteMany(),
-    prisma.review.deleteMany(),
-    prisma.cartItem.deleteMany(),
-    prisma.product.deleteMany(),
-    prisma.category.deleteMany(),
-    prisma.user.deleteMany(),
-    prisma.storefrontConfig.deleteMany(),
-  ]);
+  // Sequential deletes to avoid transaction timeouts on serverless Postgres
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.storefrontConfig.deleteMany();
 }
 
 export async function createTestUser(role = "CUSTOMER", overrides = {}) {

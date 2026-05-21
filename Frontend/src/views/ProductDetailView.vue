@@ -2,11 +2,15 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductStore } from '../store/products'
+import { useCartStore } from '../store/cart'
+import { useAuthStore } from '../store/auth'
 import { categorySlides, getIcon } from '../data/products'
 
 const route = useRoute()
 const router = useRouter()
 const store = useProductStore()
+const cart = useCartStore()
+const auth = useAuthStore()
 
 const productId = computed(() => route.params.id)
 
@@ -56,6 +60,26 @@ function goToProduct(id) {
 
 function formatPrice(price) {
   return `$${Number(price).toFixed(2)}`
+}
+
+const addingToCart = ref(false)
+const cartMessage = ref('')
+
+async function handleAddToCart() {
+  if (!auth.isLoggedIn) {
+    router.push(`/login?redirect=/product/${productId.value}`)
+    return
+  }
+  addingToCart.value = true
+  cartMessage.value = ''
+  const success = await cart.addToCart(productId.value, 1)
+  if (success) {
+    cartMessage.value = 'Added to cart'
+    setTimeout(() => { cartMessage.value = '' }, 2000)
+  } else {
+    cartMessage.value = cart.error || 'Failed to add'
+  }
+  addingToCart.value = false
 }
 </script>
 
@@ -166,10 +190,18 @@ function formatPrice(price) {
                   {{ option }}
                 </button>
               </div>
-              <button class="w-full py-5 bg-black text-white font-semibold tracking-tight hover:bg-neutral-800 active:scale-[0.98] transition-all rounded-lg flex items-center justify-center space-x-2">
-                <span>ADD TO CART</span>
-                <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+              <button
+                @click="handleAddToCart"
+                :disabled="addingToCart || product.stock <= 0"
+                class="w-full py-5 bg-black text-white font-semibold tracking-tight hover:bg-neutral-800 active:scale-[0.98] transition-all rounded-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="addingToCart" class="inline-block w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin mr-2"></span>
+                <span>{{ product.stock <= 0 ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
+                <span v-if="!addingToCart && product.stock > 0" class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
               </button>
+              <p v-if="cartMessage" class="text-[11px] font-mono text-center mt-2" :class="cartMessage === 'Added to cart' ? 'text-green-600' : 'text-red-600'">
+                {{ cartMessage }}
+              </p>
               <button class="w-full py-5 border border-neutral-200 text-[#1d1d1f] font-semibold tracking-tight hover:bg-neutral-100 active:scale-[0.98] transition-all rounded-lg">
                 SAVE FOR LATER
               </button>
